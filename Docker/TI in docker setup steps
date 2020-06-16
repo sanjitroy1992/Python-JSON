@@ -1,0 +1,112 @@
+Changes in TI project:
+** in core.Webhandler.py file changed \\ to / for linux
+** in core.Webhandler.py file changed webdriver.Chrome() to webdriver.Remote and passed selenium-hub url
+** Now. in dockerfile mentions the below contents:
+
+FROM registry.misys.global.ad/unifiedtestframework/utf-python37-linux-releases:latest
+
+MAINTAINER Test Automation CoE <TestAutomation.CoE@misys.com>
+LABEL Running TITA project using Unified Test Framework in Docker.
+
+ENV PYTHONPATH /allure-2.8.0/bin:/tita/resources/drivers/linux
+
+COPY . /Tests
+
+RUN cd /Tests/ \
+        && pip install --upgrade pip \
+        && pip install allure-python-commons==2.8.14 \
+        && pip install allure-robotframework==2.8.14 \
+        && rm Dockerfile
+			
+WORKDIR tita
+CMD ["python", "-m", "robot.run", "."]
+
+** Create a docker-compose.yaml file and mention the below details.
+version: "3"
+services:
+  selenium-hub:
+    image: selenium/hub:latest
+    expose:
+        - "4444"
+  chrome:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:       
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+  
+  tita-container:
+       # Mapped the test directory.In this case we are passing variable 'browser' and running robot-suite present inside Demo/TestCases/UI_test of mapped directory
+      image: tita-image
+#      volumes:
+#        - D:/Robot-Report-Docker:/Tests/tita/Reports
+      command: python -m robot.run --variable HEADLESS:TRUE --variable SET_ENV_TI:http://10.206.71.16:8080/tiplus2-global --variable TI_USERNAME:SUPERVISOR --variable TI_PASSWORD:SUPERVISOR4 --outputdir ./Results --include stable ./tests/Smoke/Product/CleanPayments/ICP/Correspondence/Core_ICP-COR01.robot
+#      command: python -m robot.run -V variables.py Demo/TestCases/UI_test
+      depends_on:
+      - chrome
+	  
+	 
+docker commands:
+** maintain two cmd prompt one for docker image build and one for docker-compose file.
+building image:
+** docker build -t tita-image . (this will use the dockerfile and create a TI image using UTF image as base)
+building the docker bash command:
+** docker run --name test-container -v --rm -it tita-image bash
+running the robot command inside the container:
+python -m robot.run --variable HEADLESS:TRUE --variable SET_ENV_TI:http://10.206.71.16:8080/tiplus2-global --variable TI_USERNAME:SUPERVISOR --variable TI_PASSWORD:SUPERVISOR4 --outputdir ./Results --include stable ./tests/Smoke/Product/CleanPayments/ICP/Correspondence/Core_ICP-COR01.robot
+
+docker-compose file commands:
+** docker-compose up (Used to run the selenium services and running the robot tests insede the container)
+** ctrl+c (to stop the running containers)
+** docker-compose down (to remove the container)
+
+Note:
+for running chrome in linux docker selenium/node-chrome has all the capabilities like chromedriver an all. No need to set chromedriver seperately.
+
+
+
+Selenium Grid Documentation for docker:
+node setup link: https://developers.perfectomobile.com/pages/viewpage.action?pageId=21435360
+
+Set up Selenium GRID hub:
+
+Download the latest Selenium Server file from http://docs.seleniumhq.org/download/
+Save Selenium Server jar file to a folder in your Hub machine
+To launch a hub, Open command prompt and type the below command
+java -jar selenium-server-standalone-3.3.1.jar -role hub
+
+To verify whether hub is running, open the browser and navigate to http://localhost:4444
+Click the Console link and then click View Config
+Note:
+Make sure you change the version number from the command accordingly.
+Your Grid server will be up and running till the time command prompt window is opened, if you close it, that will also stop the selenium server.
+Selenium Grid, by default uses port 4444 for its web interface. To start the same on other port, use this command: java -jar selenium-server-standalone-3.3.1.jar -port 4455 -role hub
+
+
+Set up Selenium GRID node:
+
+The Node Machine must be different from the Hub Machine
+This means that the IP Address of the Hub Machine will become 
+         http:// + Hub Machine IP Address + Hub Port = http://192.168.1.164:4444
+
+To register Node Machine with Hub Machine, Open command prompt and type the below command
+                 java -jar selenium-server-standalone-3.3.1.jar -role node -hub   http://192.168.1.164:4444/grid/register -port 5555
+
+The node will be connected to the hub and can be seen in Grid console
+Note:
+
+By default node opens 11 browser instances
+5 chrome, 5 Firefox and 1 IE
+
+for connecting a node with more options as below:
+
+java -jar selenium-server-standalone-3.141.59.jar -role node -hub http://10.246.4.228:4444/grid/register -port 5555 maxInstances=10" -browser "browserName=chrome,version=75.0.3770.80,maxInstances=10,platform=WINDOWS"
+
+
+java -Dwebdriver.chrome.driver=C:/eclipse/chromedriver/chromedriver.exe -jar selenium-server-standalone-2.48.2.jar -port 5556 -role node -hub http://localhost:4444/grid/register -browser "browserName=chrome, version=ANY, maxInstances=10, platform=WINDOWS" 
+
+
+java -jar selenium-server-standalone-3.141.59.jar -port 5556 -role node -hub http://10.246.10.253:4444/grid/register -browser "browserName=chrome, version=75.0.3770.80, maxInstances=10, platform=WINDOWS"
+
+
