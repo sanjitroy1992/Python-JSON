@@ -1,6 +1,14 @@
 Changes in TI project:
-** in core.Webhandler.py file changed \\ to / for linux
-** in core.Webhandler.py file changed webdriver.Chrome() to webdriver.Remote and passed selenium-hub url
+** in core.Webhandler.py 
+1. file changed \\ to / for linux
+2. changed webdriver.Chrome() to webdriver.Remote and passed selenium-hub url
+3. To run with docker have put a condition as below
+		RUN_WITH_DOCKER = BuiltIn().get_variable_value("${RUN_WITH_DOCKER}")
+        if RUN_WITH_DOCKER != None and RUN_WITH_DOCKER.lower() == 'true':
+if from robot/pabot command the argument RUN_WITH_DOCKER:TRUE passed. then it will run using selenium-hub.
+4. By default it runs as usual.
+
+Docker:
 ** Now. in dockerfile mentions the below contents:
 
 FROM registry.misys.global.ad/unifiedtestframework/utf-python37-linux-releases:latest
@@ -55,6 +63,10 @@ building the docker bash command:
 ** docker run --name test-container -v --rm -it tita-image bash
 running the robot command inside the container:
 python -m robot.run --variable HEADLESS:TRUE --variable SET_ENV_TI:http://10.206.71.16:8080/tiplus2-global --variable TI_USERNAME:SUPERVISOR --variable TI_PASSWORD:SUPERVISOR4 --outputdir ./Results --include stable ./tests/Smoke/Product/CleanPayments/ICP/Correspondence/Core_ICP-COR01.robot
+** running images
+docker images
+** removing an image
+docker rmi -f imageID
 
 docker-compose file commands:
 ** docker-compose up (Used to run the selenium services and running the robot tests insede the container)
@@ -109,4 +121,9 @@ java -Dwebdriver.chrome.driver=C:/eclipse/chromedriver/chromedriver.exe -jar sel
 
 java -jar selenium-server-standalone-3.141.59.jar -port 5556 -role node -hub http://10.246.10.253:4444/grid/register -browser "browserName=chrome, version=75.0.3770.80, maxInstances=10, platform=WINDOWS"
 
+robot:
+command: python -m robot.run --variable RUN_WITH_DOCKER:TRUE --variable HEADLESS:TRUE --variable SET_ENV_TI:http://10.206.71.16:8080/tiplus2-global --variable TI_USERNAME:SUPERVISOR --variable TI_PASSWORD:SUPERVISOR4 --outputdir ./Results --include stable ./tests/Smoke/Product/CleanPayments/ICP/Correspondence/Core_ICP-COR01.robot
+
+pabot:
+command: python -m pabot.run --processes 8 --variable RUN_WITH_DOCKER:TRUE --variable HEADLESS:TRUE --variable SET_ENV_TI:http://10.206.71.16:8080/tiplus2-global --variable TI_USERNAME:SUPERVISOR --variable TI_PASSWORD:SUPERVISOR4 --outputdir ./Results --include stable ./tests/Smoke/Product/CleanPayments
 

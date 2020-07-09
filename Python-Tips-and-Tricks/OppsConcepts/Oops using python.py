@@ -27,3 +27,56 @@ p2.give_raise(500)
 print(p2.prog_language)
 print(p2.salary)
 
+
+
+"""
+Duck Typing
+"""
+# class TheHobbit:
+#     def __len__(self):
+#        return 95022
+#
+# the_hobbit = TheHobbit()
+#
+# len(the_hobbit)
+#
+# my_str = "Hello World"
+# my_list = [34, 54, 65, 78]
+# my_dict = {"one": 123, "two": 456, "three": 789}
+#
+# len(my_str)
+# len(my_list)
+# len(my_dict)
+# len(the_hobbit)
+# my_int = 7
+# my_float = 42.3
+#
+# len(my_int)
+# len(my_float)
+
+# Example 2
+class duck:
+    def quack(self):
+        print("Quack, Quack")
+    def fly(self):
+        print("Flap, Flap")
+
+class person:
+    def quack(self):
+        print("I am quacking like a duck")
+    def fly(self):
+        print("I am flapping my arms")
+
+def quack_and_fly(thing):
+    try:
+        thing.quack()
+        thing.fly()
+    except:
+        print("it dose not have same behavior as a duck")
+
+d = duck()
+quack_and_fly(d)
+
+p = person()
+quack_and_fly(p)
+

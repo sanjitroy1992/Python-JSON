@@ -19,5 +19,5 @@ def test_with_params1(a,b,c):
     assert a+b == c
 
 @pytest.mark.parametrize("a,b,c",test_data2)
-def test_with_params2(a,b,c):
+def test_with_params2(a, b, c):
     assert a+b == c
